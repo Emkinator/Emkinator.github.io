@@ -1,7 +1,28 @@
 <html>
-<head></head>
+    <head>
+        <title>Disk scheduling visualisation</title>
+        <script src="script.js"></script>
+    </head>
 
 <body>
-<h1>Hello world!</h1>
-<body>
+    <label for="addresses">Addresses</label>
+    <input type="text" name="addresses" id="addressInput"><br/>
+    
+    <label for="diskSize">Disk size</label>
+    <input type="text" name="diskSize" id="diskSizeInput"><br/>
+    
+    <label for="headStartPosition">Head starting position</label>
+    <input type="text" name="headStartPosition" id="headStartPositionInput"><br/>
+    
+    <select id="algorithmSelectInput">
+        <option value="FCFS">First come first serve</option>
+        <option value="SSTF">Shortest seek time first</option>
+        <option value="SCAN">SCAN</option>
+        <option value="CSCAN">C-SCAN</option>
+        <option value="CLOOK">C-LOOK</option>
+    </select> 
+    
+    <button id="drawButton">Draw</button> <br/>
+    <canvas id="myCanvas"></canvas>
+</body>
 </html>
