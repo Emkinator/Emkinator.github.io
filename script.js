@@ -5,13 +5,40 @@ CanvasRenderingContext2D.prototype.animateLine = animateLine;
 var canvasWidth;
 var canvasHeight;
 
+var addresses;
 var diskSize;
-var oneMoveHeight;
 var headStartPosition;
+var selectedAlgorithm;
 
-window.onload = function () {
-    var canvas = document.getElementById("myCanvas");
+var oneMoveHeight;
+var currentlyAnimating;
+
+window.onload = function () { 
+    var ctx = setupCanvas();
     
+    document.getElementById("drawButton").addEventListener("click", function() {    
+        if(currentlyAnimating)
+            return;
+        
+        getInput();
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);     
+        
+        ctx.strokeStyle="#000000";
+        drawTopAxis(ctx);
+        drawMemoryAddresses(ctx, addresses, headStartPosition);
+        
+        var result = applyAlgorithm(addresses, selectedAlgorithm);
+        displayDistance(result.distance);
+        
+        ctx.strokeStyle="#0000FF";
+        visualizeMemoryAccess(ctx, result.addresses);
+    });
+
+};
+
+function setupCanvas() {
+    var canvas = document.getElementById("myCanvas");
+
     canvas.style.width='100%';
     canvas.style.height='80%';
     canvas.width  = canvas.offsetWidth;
@@ -20,30 +47,31 @@ window.onload = function () {
     var ctx = canvas.getContext("2d");
     canvasWidth = canvas.width;
     canvasHeight = canvas.height;
-    var drawButton = document.getElementById("drawButton");
-    drawButton.addEventListener("click", function() {    
+    
+    return ctx;
+}
+
+function getInput() {
         var addressInput = document.getElementById("addressInput").value;
-        var addresses = addressInput.split(',');
+        addresses = addressInput.split(',');
+        
+        for(var i = 0; i<addresses.length; i++) {
+            addresses[i] = parseInt(addresses[i]);
+        }
 		        
-        diskSize = document.getElementById("diskSizeInput").value;
+        diskSize = parseInt(document.getElementById("diskSizeInput").value);
         
         headStartPosition = document.getElementById("headStartPositionInput").value;
 		
         var algorithmSelectInput = document.getElementById("algorithmSelectInput");
-        var algorithm = algorithmSelectInput.options[algorithmSelectInput.selectedIndex].value;
-        
-        
-        oneMoveHeight = Math.min(100, (canvasHeight - 120) / addresses.length);
+        selectedAlgorithm = algorithmSelectInput.options[algorithmSelectInput.selectedIndex].value;
+              
+        oneMoveHeight = Math.min(100, (canvasHeight - 350) / addresses.length);
+}
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);       
-
-        drawTopAxis(ctx);
-        drawMemoryAddresses(ctx, addresses);
-
-        visualizeMemoryAccess(ctx, applyAlgorithm(addresses, algorithm));
-    });
-
-};
+function displayDistance(distance) {
+    document.getElementById("distanceResult").innerText = distance;
+}
 
 function applyAlgorithm(addresses, algorithm) {
     switch(algorithm) {
@@ -65,8 +93,20 @@ function applyAlgorithm(addresses, algorithm) {
     }
 }
 
+
+///////////////////////// Scheduling algorithms ////////////////////////////////
+
 function FCFS(addresses) {
-    return addresses;
+    var movedDistance = 0;
+    var currentPosition = headStartPosition; 
+    addresses.forEach(function(element) {
+        movedDistance += Math.abs(currentPosition - element);
+        currentPosition = element;
+    });
+    return { 
+        addresses: addresses, 
+        distance: movedDistance
+    };
 }
 
 function SSTF(addresses) {
@@ -85,29 +125,148 @@ function SSTF(addresses) {
     }
     
     var result = [];
+    var movedDistance = 0;
     var position = headStartPosition;
     
     while(addresses.length > 0) {
         var index = findClosest(addresses, position);
         var nextAddress = addresses.splice(index, 1);
         result.push(nextAddress);
+        movedDistance += Math.abs(position - nextAddress);
         position = nextAddress;
     }
-
-    return result;
-}
+    
+    return { 
+        addresses: result, 
+        distance: movedDistance
+    };}
 
 function SCAN(addresses) {
-    return addresses;
+    addresses.push(0);
+    addresses.sort(function(a,b) {
+        return a - b;
+    });
+    
+    var startIndex = 0;
+    while(addresses[startIndex] < headStartPosition) {
+        startIndex++;
+    } 
+    startIndex--;
+    
+    var position = headStartPosition;
+    var index = startIndex;
+    
+    var result = [];
+    var movedDistance = 0;
+    
+    while(index >= 0) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index--;
+    }   
+    
+    index = startIndex+1;
+    
+    while(index < addresses.length) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index++;
+    }
+    
+    return { 
+        addresses: result, 
+        distance: movedDistance
+    };
 }
 
 function CSCAN(addresses) {
-    return addresses;
+    addresses.sort(function(a,b) {
+        return a - b;
+    });
+    
+    var startIndex = 0;
+    while(addresses[startIndex] < headStartPosition) {
+        startIndex++;
+    } 
+    
+    var position = headStartPosition;
+    var index = startIndex;
+    
+    var result = [];
+    var movedDistance = 0;
+    
+    while(index < addresses.length) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index++;
+    }
+    
+    if(position != diskSize)
+        result.push(diskSize);   
+    result.push(0);
+
+    movedDistance += diskSize + (diskSize - addresses[addresses.length - 1]);
+    
+    position = 0;
+    index = 0;
+
+    while(index < startIndex) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index++;
+    }
+    
+    return { 
+        addresses: result, 
+        distance: movedDistance
+    };
 }
 
 function CLOOK(addresses) {
-    return addresses;
+    addresses.sort(function(a,b) {
+        return a - b;
+    });
+    
+    var startIndex = 0;
+    while(addresses[startIndex] < headStartPosition) {
+        startIndex++;
+    } 
+    
+    var position = headStartPosition;
+    var index = startIndex;
+    
+    var result = [];
+    var movedDistance = 0;
+    
+    while(index < addresses.length) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index++;
+    }
+        
+    index = 0;
+
+    while(index < startIndex) {
+        result.push(addresses[index]);
+        movedDistance += Math.abs(position - addresses[index]);
+        position = addresses[index];
+        index++;
+    }
+    
+    return { 
+        addresses: result, 
+        distance: movedDistance
+    };
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////// Drawing functions ///////////////////////////////////
 
 function animateLine(x1, y1, x2, y2, onDoneCallback, ratio) {
     ratio = ratio || 0;
@@ -148,19 +307,25 @@ function drawTopAxis(ctx) {
     ctx.fillText(diskSize, canvasWidth-20, 50);
 }
 
-function drawMemoryAddresses(ctx, addresses) {
+function drawMemoryAddresses(ctx, addresses, startAddress) {
     addresses.forEach(function(address) {
         var x = getCanvasCoordinatesForAddress(address);
         ctx.drawLine(x, 10, x, 30);
         ctx.fillText(address, x-10, 40);
     });
+    
+    var x = getCanvasCoordinatesForAddress(startAddress);
+    ctx.drawLine(x, 10, x, 30);
+    ctx.fillText(startAddress, x-10, 40);
 }
+
+///////////////////////////////////////////////////////////////
 
 function getCanvasCoordinatesForAddress(memoryAddress) {
     return canvasWidth * (memoryAddress / diskSize);
 }
-
 function visualizeMemoryAccess(ctx, addresses) {
+    currentlyAnimating = true;
     var currentPosition = headStartPosition;
     var currentHeight = 100;
     
@@ -170,16 +335,19 @@ function visualizeMemoryAccess(ctx, addresses) {
 }
 
 function _visualizeMemoryAccess(ctx, addresses, currentPosition, currentHeight) {
-    if(!addresses)
+    if(!addresses) {
+        currentlyAnimating = false;
         return;
-    if(addresses.length === 0)
+    }
+    if(addresses.length === 0) {
+        currentlyAnimating = false;
         return;
+    }
     
     var nextAddress = addresses.shift();
     var start = getCanvasCoordinatesForAddress(currentPosition);
     var end = getCanvasCoordinatesForAddress(nextAddress);
-
-    
+  
     var moveDistance = Math.abs(start - end);
     var newHeight = currentHeight + oneMoveHeight;//moveDistance * headMoveSpeed;
     ctx.animateLine(start, currentHeight, end, newHeight, function() {
