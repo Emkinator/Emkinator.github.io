@@ -313,6 +313,7 @@ function animateLine(x1, y1, x2, y2, midX, midY, onDoneCallback) {
             ctx.animateLine(x1, y1, x2, y2,midX,midY, onDoneCallback);
         });
     }
+
     else if(onDoneCallback){
       //Finish the line
       this.drawLine(x1,y1,x2,y2);
