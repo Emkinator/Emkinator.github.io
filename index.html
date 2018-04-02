@@ -2,21 +2,48 @@
     <head>
         <title>Disk scheduling visualisation</title>
         <script src="script.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<style>
+			#addressInput{
+				width: 20%;
+			}
+			#diskSizeInput{
+				width: 40px;
+				margin: 5px;
+			}
+			#headStartPositionInput{
+				width: 40px;
+			}
+			#algorithmSelectInput{
+				margin-top: 5px;
+				width: 12%;
+				margin-bottom: 5px;
+			}
+			label{
+				margin-button: 10px;
+			}
+			#inputText{
+				margin-top: 10px;
+				margin-left: 10px;
+				font-size: 20px;
+			}
+		</style>
     </head>
 
 <body>
-    <label for="addresses">Addresses</label>
+<div id="inputText">
+    <label for="addresses">Addresses:</label>
     <input type="text" name="addresses" value="98, 183, 37, 122, 14, 124, 65, 67" id="addressInput"><br/>
     
-    <label for="diskSize">Disk size</label>
+    <label for="diskSize">Disk size:</label>
     <input type="text" name="diskSize" value="199" id="diskSizeInput"><br/>
     
-    <label for="headStartPosition">Head starting position</label>
+    <label for="headStartPosition">Head starting position:</label>
     <input type="text" name="headStartPosition" value="53" id="headStartPositionInput"><br/>
     
-    <div>Moved distance: <div id="distanceResult"></div></div>
+    <div id="distanceText">Moved distance: <div id="distanceResult"></div></div>
     
-    <select id="algorithmSelectInput">
+    <select id="algorithmSelectInput" class="form-control">
         <option value="FCFS">First come first serve</option>
         <option value="SSTF">Shortest seek time first</option>
         <option value="SCAN">SCAN</option>
@@ -24,7 +51,8 @@
         <option value="CLOOK">C-LOOK</option>
     </select> 
     
-    <button id="drawButton">Draw</button> <br/>
+    <button id="drawButton" class="btn btn-default">Draw</button> <br/>
+</div>
     <canvas id="myCanvas"></canvas>
 </body>
 </html>
