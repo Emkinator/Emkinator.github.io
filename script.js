@@ -396,3 +396,7 @@ function _visualizeMemoryAccess(ctx, addresses, currentPosition, currentHeight) 
         _visualizeMemoryAccess(ctx, addresses, nextAddress, newHeight);
     });
 }
+function showDistance()
+{
+   document.getElementById('distanceText').style.display = "inline";
+}
