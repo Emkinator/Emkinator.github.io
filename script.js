@@ -29,7 +29,12 @@ window.onload = function () {
         if(currentlyAnimating)
             return;
 
+
         getInput();
+
+        if (!simpleValidation())
+          return;
+
         // Save because of transformed coordinates
         ctx.save()
         // reset the transformation
@@ -399,4 +404,31 @@ function _visualizeMemoryAccess(ctx, addresses, currentPosition, currentHeight) 
 function showDistance()
 {
    document.getElementById('distanceText').style.display = "inline";
+}
+
+// validate input fields
+function simpleValidation()
+{
+  var valid = true;
+
+  if (headStartPosition > diskSize){
+    document.getElementById("headStartPositionInput").setCustomValidity("Invalid value.");
+    valid = false;
+  }
+  else if (headStartPosition <= diskSize) {
+    document.getElementById("headStartPositionInput").setCustomValidity("");
+  }
+
+  if (addresses.reduce(function (a,b) {
+    return Math.max(a,b);
+  }) > diskSize){
+
+    document.getElementById("addressInput").setCustomValidity("Invalid value.");
+    valid = false;
+  }
+  else {
+    document.getElementById("addressInput").setCustomValidity("");
+  }
+
+  return valid;
 }
